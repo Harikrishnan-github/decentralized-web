@@ -8,9 +8,11 @@ function uuidv4() {
 
 function compute(){
   $("#status").append("Get ready to experience awesomeness!");
-  $("#status").append("<br/> > creating result-dataset >")
-  $.post( "http://localhost:8189/v1/datasets/?uuid=" + uuidv4(), function( data ) {
+  $("#status").append("<br/> > creating result-dataset > ")
+  var uuid1 = uuidv4()
+  $.post( "http://localhost:8189/v1/datasets/?uuid=" + uuid1, function( data ) {
     $("#status").append(data);
+    $("#status").append("<br/> UUID = " + uuid1)
     var results = data
 
     $("#status").append("<br/> > creating split-status > ");
