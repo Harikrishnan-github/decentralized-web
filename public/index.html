@@ -2,129 +2,20 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Computes Decentralized Web</title>
-    <script src="https://unpkg.com/ipfs/dist/index.min.js"></script>
+    <title>Computes Decentralized Web Demo</title>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
+    <script src="/js/lattice.js"></script>
   </head>
   <body>
+    <h1>Computes Decentralized Web Demo</h1>
+    <textarea id="sentiment" rows="8" cols="80"></textarea>
+    <button type="submit" id="button" value="Submit">Submit</button>
+    <br/>
+    <div id="status"></div>
     <script type="text/javascript">
-
-    function uuidv4() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
+      $( "#button" ).click(function() {
+        compute();
       });
-    }
-    function str2ab(str) {
-      var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-      var bufView = new Uint16Array(buf);
-      for (var i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-      }
-      return buf;
-    }
-
-    const node = new Ipfs({repo: '.repo' + Math.random(), start: true, EXPERIMENTAL: { pubsub: true, relay: { enabled: true, hop: { enabled: true } } } })
-    node.on('ready', () => {
-      console.log("connected to network");
-
-      // console.log("joining computes");
-      // // node.swarm.connect("/ip4/127.0.0.1/tcp/4001/ipfs/QmYHAswgHExLkr5mNSGPGsnBcgrpnkZRem2dZMLynEipzS", function (err) {
-      // node.swarm.connect("/ip4/192.168.0.39/tcp/4001/ipfs/QmYHAswgHExLkr5mNSGPGsnBcgrpnkZRem2dZMLynEipzS", function (err) {
-      //   if (err) {
-      //     throw err
-      //   }
-      //   // if no err is present, connection is now open
-      //   node.files.add(node.types.Buffer(str2ab("skynet rocks")), function (err, res) {
-      //     if (err || !res) {
-      //       return console.error('ipfs add error', err, res)
-      //     } else {
-      //       console.log("created test file", res);
-      //     }
-      //   })
-      //
-      // })
-
-
-      console.log("Get ready to experience awesomeness!")
-      console.log("> creating result-dataset")
-      $.post( "http://localhost:8189/v1/datasets/?uuid=" + uuidv4(), function( data ) {
-        console.log( data );
-        var results = data
-
-        console.log("> creating split-status");
-        $.post( "http://localhost:8189/v1/datasets/?uuid=" + uuidv4(), function( data ) {
-          console.log( data );
-          var status = data
-
-          console.log("> creating split-task.json");
-          var task = '{"input": {"dataset": "i love skynet"},"taskDefinition": {"runner": {"type": "docker-json-runner","metadata": {"image": "computes/computes-sentiment:latest"}},"result": {"action": "set","destination": {"dataset": { "/": "' + results + '" },"path": "split/results"}}},"status": {"/": "' + status + '"}}'
-          console.log(task);
-
-          console.log("> adding task to Computes FS");
-          $.post("http://localhost:3000/dag",{task: task}, function(data){
-            console.log("Task hash:", data );
-            var dag = data.dag
-
-          // node.dag.put(task, { format: 'dag-cbor', hashAlg: 'sha3-512' }, (err, cid) => {
-          //   console.log(cid.toBaseEncodedString())
-          //   var dag = cid.toBaseEncodedString()
-
-            console.log("> adding task to Lattice");
-            // cat split-task.hash | computes-cli task enqueue
-            fetch("http://localhost:8189/v1/tasks/" + dag, {
-              method: 'PUT', // or 'PUT'
-              headers:{
-                'Content-Type': 'application/json'
-              }
-            }).then(function(res) {
-              console.log( res );
-
-              var refreshIntervalId = setInterval(function(){
-                console.log("> computing");
-
-                $.get( "http://localhost:8189/v1/datasets/" + results + "/latest", function( data ) {
-                  console.log( data );
-                  if(data.split) {
-                    clearInterval(refreshIntervalId);
-                  }
-                })
-
-              }, 1000);
-
-            })
-
-            // $.put( "http://localhost:8189/v1/tasks/" + dag + "/", function( data ) {
-            //   console.log( data );
-            //
-            //   setInterval(function(){
-            //     console.log("> checking status of queues");
-            //
-            //     $.get( "http://localhost:8189/v1/datasets/" + results + "/latest", function( data ) {
-            //       console.log( data );
-            //     })
-            //
-            //   }, 1000);
-            //
-            // })
-
-            // zdpuAzE1oAAMpsfdoexcJv6PmL9UhE8nddUYGU32R98tzV5fv
-          })
-
-          // $.post("/dag?task=" + task, function( data ) {
-          //   console.log( data );
-          //
-          // })
-
-
-        });
-      });
-
-
-    })
-
     </script>
-
   </body>
 </html>
