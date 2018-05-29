@@ -1,3 +1,5 @@
+const node = new Ipfs({repo: '.repo' + Math.random(), start: true, EXPERIMENTAL: { pubsub: true, relay: { enabled: true, hop: { enabled: true } } } })
+
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -6,6 +8,14 @@ function uuidv4() {
 }
 
 function compute(){
+  // Instructions for connecting Go-IPFS and JS-IPFS via relay - https://github.com/ipfs/js-ipfs/tree/master/examples/circuit-relaying
+  node.swarm.connect("/ip4/127.0.0.1/tcp/4004/ws/ipfs/QmYHAswgHExLkr5mNSGPGsnBcgrpnkZRem2dZMLynEipzS", (err) => {
+    if (err) {
+      return console.error(err)
+    }
+    console.log("connected to relay");
+  })
+
   $("#status").append("Get ready to experience awesomeness!");
   $("#status").append("<br/> > creating result-dataset > ")
   var uuid1 = uuidv4()
@@ -24,14 +34,14 @@ function compute(){
       $("#status").append(task);
 
       $("#status").append("<br/> > adding task to Computes FS");
-      $.post("http://localhost:3000/dag",{task: task}, function(data){
-        $("#status").append("<br/> Task hash: " + data );
-        var dag = data.dag
+      // $.post("http://localhost:3000/dag",{task: task}, function(data){
+      //   $("#status").append("<br/> Task hash: " + data );
+      //   var dag = data.dag
 
       // COMMENTED DUE TO JS-IPFS AND GO IPFS NOT YET COMMUNICATING
-      // node.dag.put(task, { format: 'dag-cbor', hashAlg: 'sha3-512' }, (err, cid) => {
-      //   console.log(cid.toBaseEncodedString())
-      //   var dag = cid.toBaseEncodedString()
+      node.dag.put(JSON.parse(task), { format: 'dag-cbor', hashAlg: 'sha3-512' }, (err, cid) => {
+        console.log(cid.toBaseEncodedString())
+        var dag = cid.toBaseEncodedString()
 
         $("#status").append("<br/> > adding task to Lattice");
         fetch("http://localhost:8189/v1/tasks/" + dag, {
